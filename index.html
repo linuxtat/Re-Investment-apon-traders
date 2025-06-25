@@ -42,9 +42,9 @@
 </head>
 <body>
   <h2>Investment Growth Calculator</h2>
-  <label>Initial Investment (Tk): <input type="number" id="initial" value="1000000" /></label><br>
-  <label>Profit per Lakh (Tk/month): <input type="number" id="profitPerLakh" value="1400" /></label><br>
-  <label>Duration (months): <input type="number" id="duration" value="120" /></label><br>
+  <label>Initial Investment (Tk): <input type="number" id="initial" placeholder="e.g. 1000000" /></label><br>
+  <label>Profit per Lakh (Tk/month): <input type="number" id="profitPerLakh" placeholder="e.g. 1400" /></label><br>
+  <label>Duration (months): <input type="number" id="duration" placeholder="e.g. 120" /></label><br>
   <button onclick="generateTable()">Generate Table</button>
   <button onclick="downloadExcel()">Download Excel</button>
 
@@ -67,6 +67,10 @@
       const initial = parseFloat(document.getElementById('initial').value);
       const profitPerLakh = parseFloat(document.getElementById('profitPerLakh').value);
       const duration = parseInt(document.getElementById('duration').value);
+      if (isNaN(initial) || isNaN(profitPerLakh) || isNaN(duration)) {
+        alert("Please fill in all input fields correctly.");
+        return;
+      }
       const rate = profitPerLakh / 100000;
 
       let investment = initial;
