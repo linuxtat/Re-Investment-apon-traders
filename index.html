@@ -29,6 +29,15 @@
     th {
       background-color: #f0f0f0;
     }
+    .reinvest {
+      background-color: #d4edda;
+    }
+    .summary {
+      margin-top: 30px;
+      background: #f8f8f8;
+      padding: 15px;
+      border: 1px solid #ccc;
+    }
   </style>
 </head>
 <body>
@@ -51,6 +60,8 @@
     <tbody></tbody>
   </table>
 
+  <div class="summary" id="summary" style="display:none"></div>
+
   <script>
     function generateTable() {
       const initial = parseFloat(document.getElementById('initial').value);
@@ -60,23 +71,30 @@
 
       let investment = initial;
       let cash = 0;
+      let totalProfit = 0;
       const rows = [];
+      const reinvestMonths = [];
 
       for (let month = 1; month <= duration; month++) {
         const profit = investment * rate;
+        totalProfit += profit;
         cash += profit;
+        let reinvested = false;
         if (cash >= 100000) {
           investment += 100000;
           cash -= 100000;
+          reinvested = true;
+          reinvestMonths.push(month);
         }
-        rows.push([month, Math.round(investment), profit.toFixed(2), cash.toFixed(2)]);
+        rows.push([month, Math.round(investment), profit.toFixed(2), cash.toFixed(2), reinvested]);
       }
 
       const tbody = document.querySelector('#resultTable tbody');
       tbody.innerHTML = '';
       rows.forEach(row => {
         const tr = document.createElement('tr');
-        row.forEach(cell => {
+        if (row[4]) tr.classList.add('reinvest');
+        row.slice(0, 4).forEach(cell => {
           const td = document.createElement('td');
           td.textContent = cell;
           tr.appendChild(td);
@@ -84,7 +102,20 @@
         tbody.appendChild(tr);
       });
       document.getElementById('resultTable').style.display = 'table';
-      window.generatedRows = rows;
+      window.generatedRows = rows.map(r => r.slice(0, 4));
+
+      // Summary
+      const summary = document.getElementById('summary');
+      summary.innerHTML = `
+        <h3>🔢 সামারি:</h3>
+        <p>শুরুতে বিনিয়োগ: ৳${initial.toLocaleString()}</p>
+        <p>শেষে বিনিয়োগ: ৳${Math.round(investment).toLocaleString()}</p>
+        <p>হাতে থাকা টাকা: ৳${cash.toFixed(0).toLocaleString()}</p>
+        <p>মোট লাভ (সুদ): ৳${totalProfit.toFixed(0).toLocaleString()}</p>
+        <p>মোট মূল্য (মূলধন + হাতে থাকা): ৳${(investment + cash).toFixed(0).toLocaleString()}</p>
+        <p>সময়কাল: ${duration / 12} বছর</p>
+      `;
+      summary.style.display = 'block';
     }
 
     function downloadExcel() {
