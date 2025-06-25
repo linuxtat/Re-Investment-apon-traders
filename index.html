@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Investment Growth Calculator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    input, button {
+      padding: 8px;
+      margin: 5px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #999;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <h2>Investment Growth Calculator</h2>
+  <label>Initial Investment (Tk): <input type="number" id="initial" value="1000000" /></label><br>
+  <label>Profit per Lakh (Tk/month): <input type="number" id="profitPerLakh" value="1400" /></label><br>
+  <label>Duration (months): <input type="number" id="duration" value="120" /></label><br>
+  <button onclick="generateTable()">Generate Table</button>
+  <button onclick="downloadExcel()">Download Excel</button>
+
+  <table id="resultTable" style="display:none">
+    <thead>
+      <tr>
+        <th>Month</th>
+        <th>Investment (Tk)</th>
+        <th>Monthly Profit (Tk)</th>
+        <th>Cash on Hand (Tk)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    function generateTable() {
+      const initial = parseFloat(document.getElementById('initial').value);
+      const profitPerLakh = parseFloat(document.getElementById('profitPerLakh').value);
+      const duration = parseInt(document.getElementById('duration').value);
+      const rate = profitPerLakh / 100000;
+
+      let investment = initial;
+      let cash = 0;
+      const rows = [];
+
+      for (let month = 1; month <= duration; month++) {
+        const profit = investment * rate;
+        cash += profit;
+        if (cash >= 100000) {
+          investment += 100000;
+          cash -= 100000;
+        }
+        rows.push([month, Math.round(investment), profit.toFixed(2), cash.toFixed(2)]);
+      }
+
+      const tbody = document.querySelector('#resultTable tbody');
+      tbody.innerHTML = '';
+      rows.forEach(row => {
+        const tr = document.createElement('tr');
+        row.forEach(cell => {
+          const td = document.createElement('td');
+          td.textContent = cell;
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      document.getElementById('resultTable').style.display = 'table';
+      window.generatedRows = rows;
+    }
+
+    function downloadExcel() {
+      if (!window.generatedRows) return alert('Please generate the table first.');
+      const ws = XLSX.utils.aoa_to_sheet([
+        ['Month', 'Investment (Tk)', 'Monthly Profit (Tk)', 'Cash on Hand (Tk)'],
+        ...window.generatedRows
+      ]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Investment');
+      XLSX.writeFile(wb, 'investment_growth.xlsx');
+    }
+  </script>
+</body>
+</html>
